@@ -1,20 +1,30 @@
 const datapay = require('datapay')
 const qrcode = require('qrcode-terminal');
 const fs = require('fs')
-const createKey = function() {
-  let privateKey = new datapay.bsv.PrivateKey();
-  let address = privateKey.toAddress();
-  let pubKey = privateKey.toPublicKey();
-  return {PRIVATE: privateKey.toWIF(), ADDRESS: address.toString(), PUBLIC: pubKey.toString()}
+const createKey = function(prefix=null) {
+
+    while (true) {
+        var privateKey = new datapay.bsv.PrivateKey();
+        var address = privateKey.toAddress();
+        var pubKey = privateKey.toPublicKey();
+
+        //console.log("generated " + address.toString());
+
+            //console.log({PRIVATE: privateKey.toWIF(), ADDRESS: address.toString(), PUBLIC: pubKey.toString()});
+        if (prefix == null || address.toString().indexOf("1" + prefix) == 0) {
+            return {PRIVATE: privateKey.toWIF(), ADDRESS: address.toString(), PUBLIC: pubKey.toString()}
+        }
+    }
+
 }
 module.exports = function() {
   let _path = process.cwd() + "/.bit"
+  let keys = createKey()
   if (fs.existsSync(_path)) {
     console.log("Bitcom already initiated. Use a folder with no .bit file.")
     return;
   }
   let stream = fs.createWriteStream(_path)
-  let keys = createKey()
   stream.once('open', function(fd) {
     let content = Object.keys(keys).map(function(key) {
       return key + "=" + keys[key] 
